@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Teachable Machine — Quick Embed</title>
+  <style>
+    body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial; margin: 16px; }
+    .wrap { max-width: 840px; margin: 0 auto; }
+    header { display:flex; gap:12px; align-items:center; margin-bottom:12px; }
+    #webcam-container, #upload-container { display:flex; gap:12px; align-items:flex-start; flex-wrap:wrap; }
+    video, canvas, img { border:1px solid #ddd; border-radius:6px; max-width:100%; }
+    .controls { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+    .results { margin-top:12px; }
+    .result-item { display:flex; justify-content:space-between; gap:12px; padding:6px 8px; border-radius:6px; background:#fafafa; margin-bottom:6px; }
+    .progress { width:120px; height:10px; background:#eee; border-radius:6px; overflow:hidden; align-self:center; }
+    .bar { height:100%; background:#4caf50; }
+    #status { font-size:0.95rem; color:#444; }
+    small { color:#666; }
+    button { padding:8px 10px; border-radius:6px; border:1px solid #ccc; background:white; cursor:pointer; }
+    input[type=file] { padding:6px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1 style="margin:0;font-size:1.25rem">Teachable Machine — Quick Embed</h1>
+      <div id="status">Loading...</div>
+    </header>
+
+    <p>
+      This page loads your Teachable Machine image model and supports webcam (live) classification or uploading an image.
+    </p>
+
+    <div class="controls" style="margin-bottom:8px">
+      <button id="webcam-btn">Start Webcam</button>
+      <label>
+        Upload an image:
+        <input id="image-input" type="file" accept="image/*">
+      </label>
+      <small>Tip: allow camera access for webcam mode.</small>
+    </div>
+
+    <div id="webcam-container">
+      <video id="webcam" autoplay playsinline width="320" height="240" style="display:none;"></video>
+      <canvas id="webcam-canvas" width="320" height="240" style="display:none;"></canvas>
+      <img id="uploaded-img" alt="" style="display:none; width:320px; height:auto;">
+    </div>
+
+    <div class="results">
+      <h3 style="margin:8px 0 6px 0">Predictions</h3>
+      <div id="pred-list"></div>
+    </div>
+
+    <hr>
+
+    <h4>Quick run instructions</h4>
+    <ol>
+      <li>Serve this file from a web server (browsers block some fetches from file://). Example:
+        <pre>python -m http.server 8000</pre>
+        then open <code>http://localhost:8000/index.html</code>
+      </li>
+      <li>Allow camera access for webcam mode and ensure your model is publicly hosted (Teachable Machine hosted models are fine).</li>
+    </ol>
+  </div>
+
+  <!-- Teachable Machine image library -->
+  <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script>
+
+  <script>
+    // === YOUR MODEL URL (already set) ===
+    const MODEL_URL = "https://teachablemachine.withgoogle.com/models/q1DzKFBRt/"; // <-- your model
+
+    const statusEl = document.getElementById('status');
+    const webcamBtn = document.getElementById('webcam-btn');
+    const imageInput = document.getElementById('image-input');
+    const webcamVideo = document.getElementById('webcam');
+    const uploadedImg = document.getElementById('uploaded-img');
+    const predList = document.getElementById('pred-list');
+
+    let model, maxPredictions;
+    let webcam; // tmImage Webcam instance
+    let isWebcamOn = false;
+    let rafId;
+
+    async function init() {
+      if (!MODEL_URL || MODEL_URL.includes("PASTE_YOUR_MODEL")) {
+        statusEl.innerText = "Model URL missing — set MODEL_URL in the script.";
+        return;
+      }
+
+      try {
+        statusEl.innerText = "Loading model...";
+        const modelJSON = MODEL_URL + "model.json";
+        const metadataJSON = MODEL_URL + "metadata.json";
+        model = await tmImage.load(modelJSON, metadataJSON);
+        maxPredictions = model.getTotalClasses();
+        statusEl.innerText = "Model loaded.";
+      } catch (err) {
+        console.error(err);
+        statusEl.innerText = "Failed to load model. Check the URL and CORS. See console for details.";
+      }
+    }
+
+    async function startWebcam() {
+      if (!model) { statusEl.innerText = "Model not loaded."; return; }
+      if (isWebcamOn) return stopWebcam();
+
+      try {
+        const flip = true; // mirror for user-facing camera
+        webcam = new tmImage.Webcam(320, 240, flip);
+        await webcam.setup(); // request permission
+        await webcam.play();
+        webcamVideo.style.display = 'block';
+        uploadedImg.style.display = 'none';
+        const container = document.getElementById('webcam-container');
+        // replace the placeholder video element with the webcam.canvas
+        if (container.contains(webcamVideo)) container.replaceChild(webcam.canvas, webcamVideo);
+        isWebcamOn = true;
+        webcamBtn.innerText = 'Stop Webcam';
+        statusEl.innerText = 'Webcam running — classifying...';
+        loop();
+      } catch (err) {
+        console.error(err);
+        statusEl.innerText = "Webcam error: " + (err.message || err);
+      }
+    }
+
+    function stopWebcam() {
+      if (!webcam) return;
+      cancelAnimationFrame(rafId);
+      webcam.stop();
+      isWebcamOn = false;
+      webcamBtn.innerText = 'Start Webcam';
+      statusEl.innerText = 'Webcam stopped.';
+      const container = document.getElementById('webcam-container');
+      // restore the original video element
+      if (container.contains(webcam.canvas)) {
+        container.replaceChild(webcamVideo, webcam.canvas);
+        webcamVideo.style.display = 'none';
+      }
+    }
+
+    async function loop() {
+      webcam.update(); // update the webcam frame
+      await predict(webcam.canvas);
+      rafId = requestAnimationFrame(loop);
+    }
+
+    async function predict(imgOrCanvas) {
+      if (!model) return;
+      const prediction = await model.predict(imgOrCanvas);
+      updatePredictions(prediction);
+    }
+
+    function updatePredictions(predictions) {
+      const sorted = [...predictions].sort((a,b) => b.probability - a.probability);
+      predList.innerHTML = '';
+      sorted.forEach(p => {
+        const item = document.createElement('div');
+        item.className = 'result-item';
+        const left = document.createElement('div');
+        left.innerHTML = `<strong>${escapeHtml(p.className)}</strong>`;
+        const right = document.createElement('div');
+        right.style.display = 'flex';
+        right.style.alignItems = 'center';
+        right.style.gap = '8px';
+        const progress = document.createElement('div');
+        progress.className = 'progress';
+        const bar = document.createElement('div');
+        bar.className = 'bar';
+        bar.style.width = Math.round(p.probability*100) + '%';
+        progress.appendChild(bar);
+        const percent = document.createElement('div');
+        percent.textContent = Math.round(p.probability*100) + '%';
+        right.appendChild(progress);
+        right.appendChild(percent);
+        item.appendChild(left);
+        item.appendChild(right);
+        predList.appendChild(item);
+      });
+    }
+
+    // Handle file uploads
+    imageInput.addEventListener('change', async (ev) => {
+      const file = ev.target.files && ev.target.files[0];
+      if (!file) return;
+      stopWebcam();
+      const url = createObjectURL(file);
+      uploadedImg.src = url;
+      uploadedImg.onload = async () => {
+        uploadedImg.style.display = 'block';
+        try {
+          await predict(uploadedImg);
+          statusEl.innerText = 'Classified uploaded image.';
+        } catch (err) {
+          console.error(err);
+          statusEl.innerText = 'Error classifying image.';
+        }
+        // revoke via window.URL to avoid collision with MODEL_URL name
+        try { (window.URL || window.webkitURL).revokeObjectURL(url); } catch(e){}
+      };
+    });
+
+    webcamBtn.addEventListener('click', () => {
+      if (isWebcamOn) stopWebcam(); else startWebcam();
+    });
+
+    // small helpers
+    function escapeHtml(text) {
+      return String(text).replace(/[&<>"']/g, (m) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[m]));
+    }
+    function createObjectURL(file) {
+      return (window.URL || window.webkitURL).createObjectURL(file);
+    }
+
+    // Start: load model on page load
+    window.addEventListener('load', init);
+  </script>
+</body>
+</html>
