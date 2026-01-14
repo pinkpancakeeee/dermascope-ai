@@ -7,72 +7,84 @@
 
   <style>
     :root{
-      --bg: #0b1220; /* dark background */
-      --card: #0f1724; /* card background */
+      --base-font-size: 20px; /* larger font */
+      --compact-font-size: 15px;
+      --bg: #0b1220;
+      --card: #0f1724;
       --muted: #94a3b8;
-      --accent: #06b6d4; /* cyan */
+      --accent: #06b6d4;
       --accent-600: #0891b2;
       --accent-100: rgba(6,182,212,0.08);
       --text: #e6eef6;
-      --radius: 10px;
-      --max-width: 920px;
-      --shadow: 0 8px 30px rgba(2,6,23,0.6);
+      --radius: 12px;
+      --max-width: 1000px;
+      --shadow: 0 10px 36px rgba(2,6,23,0.6);
+      --preview-width: 480px;
+      --preview-height: 360px;
+      --compact-preview-width: 320px;
+      --compact-preview-height: 240px;
+      --result-name-size: 1.15rem;
+      --compact-result-name-size: 1rem;
+      --progress-width: 260px;
+      --compact-progress-width: 160px;
     }
 
     html,body{height:100%}
     body {
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI",
-                   Roboto, "Helvetica Neue", Arial;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
       margin: 20px;
       background: linear-gradient(180deg, #071021, #071422);
       color: var(--text);
       -webkit-font-smoothing:antialiased;
       -moz-osx-font-smoothing:grayscale;
-      line-height:1.45;
+      font-size: var(--base-font-size);
+      line-height: 1.4;
     }
+
+    body.compact { font-size: var(--compact-font-size); }
 
     .wrap { max-width: var(--max-width); margin: 0 auto; padding: 18px; }
-    header { display:flex; flex-direction:column; gap:8px; margin-bottom:18px; }
-    h1 { margin:0; font-size:1.6rem; letter-spacing: -0.02em; }
-    .subheader { margin:0; color:var(--muted); font-weight:600; font-size:0.95rem; }
-    .top-row { display:flex; justify-content:space-between; gap:12px; align-items:center; }
+    header { display:flex; flex-direction:column; gap:10px; margin-bottom:18px; }
+    .top-row { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; }
+    h1 { margin:0; font-size:2rem; }
+    .subheader { margin:0; color:var(--muted); font-weight:600; font-size:1.05rem; }
 
-    .card {
-      background:var(--card);
-      border-radius:var(--radius);
-      padding:14px;
-      box-shadow: var(--shadow);
-      border:1px solid rgba(255,255,255,0.03);
-    }
+    .card { background:var(--card); border-radius:var(--radius); padding:18px; box-shadow:var(--shadow); border:1px solid rgba(255,255,255,0.03); }
 
-    .controls { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin:10px 0 14px 0; }
-    button {
-      padding:8px 12px; border-radius:8px; border:0; background:var(--accent);
-      color:#042027; cursor:pointer; font-weight:700;
-      box-shadow: 0 6px 14px rgba(6,182,212,0.08);
-    }
-    button.ghost { background: transparent; color: var(--accent-600); border: 1px solid rgba(6,182,212,0.12); box-shadow:none; }
+    .byline { text-align:right; color:var(--text); font-weight:700; font-size:1rem; }
 
-    .controls input[type=file] { padding:6px; background:transparent; color:var(--text); }
+    .controls { display:flex; gap:12px; flex-wrap:wrap; align-items:center; margin:14px 0; }
+    button { padding:10px 16px; border-radius:12px; border:0; background:var(--accent); color:#042027; cursor:pointer; font-weight:800; font-size:1rem; }
+    button.ghost { background:transparent; color:var(--accent-600); border:1px solid rgba(6,182,212,0.12); }
 
-    #webcam-container { display:flex; gap:14px; align-items:flex-start; flex-wrap:wrap; margin-top:6px; }
-    video, canvas, img { border-radius:8px; border:1px solid rgba(255,255,255,0.03); box-shadow: 0 6px 18px rgba(2,6,23,0.3); max-width:100%; background:#03060a; }
-    .preview { width:360px; max-width:100%; }
+    #webcam-container { display:flex; gap:18px; align-items:flex-start; flex-wrap:wrap; margin-top:8px; }
+    video, canvas, img { border-radius:12px; border:1px solid rgba(255,255,255,0.03); box-shadow:0 8px 26px rgba(2,6,23,0.35); background:#03060a; object-fit:cover; }
+    .preview { width:var(--preview-width); height:var(--preview-height); }
+    body.compact .preview { width:var(--compact-preview-width); height:var(--compact-preview-height); }
 
-    .results { margin-top:12px; }
-    .result-item { display:flex; justify-content:space-between; gap:12px; padding:8px 10px; border-radius:8px; background:var(--accent-100); margin-bottom:8px; align-items:center; }
-    .result-name { font-weight:700; color:var(--text); }
-    .progress { width:160px; height:10px; background:rgba(255,255,255,0.04); border-radius:8px; overflow:hidden; }
-    .bar { height:100%; background:linear-gradient(90deg,var(--accent) , var(--accent-600)); }
+    .results { margin-top:16px; }
+    .result-item { display:flex; justify-content:space-between; gap:14px; padding:12px 14px; border-radius:12px; background:var(--accent-100); margin-bottom:12px; align-items:center; }
+    .result-name { font-weight:900; color:var(--text); font-size:var(--result-name-size); }
+    body.compact .result-name { font-size:var(--compact-result-name-size); }
+    .progress { width:var(--progress-width); height:14px; background:rgba(255,255,255,0.04); border-radius:10px; overflow:hidden; }
+    body.compact .progress { width:var(--compact-progress-width); height:12px; }
+    .bar { height:100%; background:linear-gradient(90deg,var(--accent),var(--accent-600)); }
 
     #status { font-size:0.95rem; color:var(--muted); }
 
-    footer { margin-top:18px; color:var(--muted); font-size:0.9rem; }
+    /* disclaimer badge */
+    .disclaimer { display:inline-block; padding:8px 14px; background:#ff4d4f; color:white; border-radius:999px; font-weight:800; box-shadow:0 8px 22px rgba(255,77,79,0.12); font-size:0.95rem; }
 
-    /* Responsive */
-    @media (max-width:720px){
-      .top-row{ flex-direction:column; align-items:flex-start; gap:6px;}
-      .preview { width:100%; }
+    .header-right { display:flex; flex-direction:column; align-items:flex-end; gap:8px; }
+
+    footer { margin-top:18px; color:var(--muted); font-size:1rem; }
+
+    @media (max-width:860px){
+      .top-row { flex-direction:column; align-items:flex-start; }
+      .header-right { align-items:flex-start; }
+      .controls { gap:10px; }
+      .preview { width:100%; height:auto; }
+      .disclaimer { align-self:flex-start; }
     }
   </style>
 </head>
@@ -82,46 +94,45 @@
       <div class="top-row">
         <div>
           <h1>DermaScope AI</h1>
-          <div class="subheader">Personal Project — MYP</div>
+          <div class="subheader">Personal Project MYP</div>
         </div>
-        <div style="text-align:right">
-          <div style="font-weight:600;color:var(--text);">By: Devyani Shekhawat</div>
+        <div class="header-right">
+          <div class="byline">By: Devyani Shekhawat</div>
           <div id="status">Loading...</div>
           <small style="color:var(--muted)">Model: q1DzKFBRt</small>
+          <div style="height:8px"></div>
+          <div class="disclaimer" id="disclaimer">Disclaimer: This is not medical advice.</div>
         </div>
       </div>
 
-      <p style="margin-top:12px;color:var(--muted)">
-        I’m Devyani, a high school student passionate about AI and healthcare. I built DermaScope AI to explore how machine learning can help identify common dermatological conditions like acne, eczema, and benign moles. This project was created as part of my MYP personal project — it’s a learning experiment, not a medical diagnostic tool. If you try it, please don’t use the results as medical advice. If you have questions or feedback, I’d love to hear from you!
+      <p id="bio" style="margin-top:14px;color:var(--muted)">
+        Hi there! I’m Devyani, a high school student who is passionate about AI and healthcare. I built DermaScope AI to learn how machine learning can help identify common skin conditions like acne, eczema, and benign moles. This project was created as part of my MYP personal project. If you have questions or feedback, I’d love to hear from you!
       </p>
     </header>
 
-    <div class="card" style="margin-top:12px">
+    <div class="card" style="margin-top:14px">
       <div class="controls">
         <button id="webcam-btn">Start Webcam</button>
         <button id="snap-btn" class="ghost" title="Capture frame when webcam running">Snap</button>
-        <label style="display:flex;align-items:center;gap:8px;">
-          Upload an image:
-          <input id="image-input" type="file" accept="image/*">
-        </label>
+        <label style="display:flex;align-items:center;gap:10px;color:var(--text)">Upload an image: <input id="image-input" type="file" accept="image/*" style="margin-left:8px"></label>
         <div style="flex:1"></div>
-        <button id="theme-btn" class="ghost" title="Cycle accent color">Change Accent</button>
+        <button id="compact-toggle" class="ghost" title="Toggle compact view">Compact View</button>
       </div>
 
       <div id="webcam-container">
-        <video id="webcam" autoplay playsinline class="preview" style="display:none;" width="360" height="270"></video>
-        <canvas id="webcam-canvas" width="360" height="270" class="preview" style="display:none;"></canvas>
+        <video id="webcam" autoplay playsinline class="preview" style="display:none;" width="480" height="360"></video>
+        <canvas id="webcam-canvas" width="480" height="360" class="preview" style="display:none;"></canvas>
         <img id="uploaded-img" alt="" class="preview" style="display:none;">
       </div>
 
       <div class="results" id="results-area">
-        <h3 style="margin:12px 0 8px 0">Predictions</h3>
+        <h3 style="margin:14px 0 10px 0">Predictions</h3>
         <div id="pred-list"></div>
       </div>
     </div>
 
     <footer>
-      Tip: GitHub Pages provides HTTPS (required for camera). If model fails to load, export the model and host model files on this repo to avoid CORS issues.
+      Tip: GitHub Pages provides HTTPS which is required for camera access. If the model fails to load, export the model and host model files on this repo to avoid CORS issues.
     </footer>
   </div>
 
@@ -131,18 +142,16 @@
   <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script>
 
   <script>
-    // CONFIG / QUICK EDITS
-    const MODEL_URL = "https://teachablemachine.withgoogle.com/models/q1DzKFBRt/"; // your model
-    const WEBCAM_WIDTH = 360;
-    const WEBCAM_HEIGHT = 270;
-    const AUTO_START_WEBCAM = false; // set true to auto-start camera on load
-    const SHOW_TOP_ONLY = false;     // set true to show only top prediction
+    const MODEL_URL = "https://teachablemachine.withgoogle.com/models/q1DzKFBRt/";
+    const WEBCAM_WIDTH = 480;
+    const WEBCAM_HEIGHT = 360;
+    const AUTO_START_WEBCAM = false;
+    const SHOW_TOP_ONLY = false;
 
-    // elements
     const statusEl = document.getElementById('status');
     const webcamBtn = document.getElementById('webcam-btn');
     const snapBtn = document.getElementById('snap-btn');
-    const themeBtn = document.getElementById('theme-btn');
+    const compactToggle = document.getElementById('compact-toggle');
     const imageInput = document.getElementById('image-input');
     const webcamVideo = document.getElementById('webcam');
     const webcamCanvas = document.getElementById('webcam-canvas');
@@ -150,170 +159,64 @@
     const predList = document.getElementById('pred-list');
 
     let model, maxPredictions;
-    let webcam; // tmImage Webcam instance
-    let isWebcamOn = false;
-    let rafId;
+    let webcam; let isWebcamOn = false; let rafId;
 
-    async function init() {
-      if (!MODEL_URL || MODEL_URL.includes("PASTE_YOUR_MODEL")) {
-        statusEl.innerText = "Model URL missing — set MODEL_URL in the script.";
-        return;
-      }
+    async function init(){
+      // restore compact preference
+      const compact = localStorage.getItem('derma_compact') === '1';
+      setCompact(compact);
 
-      try {
-        statusEl.innerText = "Loading model...";
-        const modelJSON = MODEL_URL + "model.json";
-        const metadataJSON = MODEL_URL + "metadata.json";
+      if (!MODEL_URL) { statusEl.innerText = 'Model URL missing'; return; }
+      try{
+        statusEl.innerText = 'Loading model...';
+        const modelJSON = MODEL_URL + 'model.json';
+        const metadataJSON = MODEL_URL + 'metadata.json';
         model = await tmImage.load(modelJSON, metadataJSON);
         maxPredictions = model.getTotalClasses();
-        statusEl.innerText = "Model loaded.";
+        statusEl.innerText = 'Model loaded.';
         if (AUTO_START_WEBCAM) startWebcam();
-      } catch (err) {
-        console.error(err);
-        statusEl.innerText = "Failed to load model. Check the URL and CORS. See console for details.";
-      }
+      }catch(err){ console.error(err); statusEl.innerText = 'Failed to load model. Check URL and CORS.'; }
     }
 
-    async function startWebcam() {
-      if (!model) { statusEl.innerText = "Model not loaded."; return; }
+    function setCompact(on){
+      document.body.classList.toggle('compact', on);
+      compactToggle.textContent = on ? 'Normal View' : 'Compact View';
+      localStorage.setItem('derma_compact', on ? '1' : '0');
+    }
+
+    compactToggle.addEventListener('click', ()=> setCompact(!document.body.classList.contains('compact')));
+
+    async function startWebcam(){
+      if (!model) { statusEl.innerText = 'Model not loaded.'; return; }
       if (isWebcamOn) return stopWebcam();
-
-      try {
-        const flip = true; // mirror user-facing camera
+      try{
+        const flip = true;
         webcam = new tmImage.Webcam(WEBCAM_WIDTH, WEBCAM_HEIGHT, flip);
-        await webcam.setup(); // request permission
-        await webcam.play();
-        webcamVideo.style.display = 'block';
-        webcamCanvas.style.display = 'none';
-        uploadedImg.style.display = 'none';
-        const container = document.getElementById('webcam-container');
-        if (container.contains(webcamVideo)) container.replaceChild(webcam.canvas, webcamVideo);
-        isWebcamOn = true;
-        webcamBtn.innerText = 'Stop Webcam';
-        statusEl.innerText = 'Webcam running — classifying...';
-        loop();
-      } catch (err) {
-        console.error(err);
-        statusEl.innerText = "Webcam error: " + (err.message || err);
-      }
+        await webcam.setup(); await webcam.play();
+        webcamVideo.style.display = 'block'; webcamCanvas.style.display = 'none'; uploadedImg.style.display = 'none';
+        const container = document.getElementById('webcam-container'); if (container.contains(webcamVideo)) container.replaceChild(webcam.canvas, webcamVideo);
+        isWebcamOn = true; webcamBtn.innerText = 'Stop Webcam'; statusEl.innerText = 'Webcam running — classifying...'; loop();
+      }catch(err){ console.error(err); statusEl.innerText = 'Webcam error: ' + (err.message || err); }
     }
 
-    function stopWebcam() {
-      if (!webcam) return;
-      cancelAnimationFrame(rafId);
-      webcam.stop();
-      isWebcamOn = false;
-      webcamBtn.innerText = 'Start Webcam';
-      statusEl.innerText = 'Webcam stopped.';
-      const container = document.getElementById('webcam-container');
-      if (container.contains(webcam.canvas)) {
-        container.replaceChild(webcamVideo, webcam.canvas);
-        webcamVideo.style.display = 'none';
-      }
-    }
+    function stopWebcam(){ if (!webcam) return; cancelAnimationFrame(rafId); webcam.stop(); isWebcamOn = false; webcamBtn.innerText = 'Start Webcam'; statusEl.innerText = 'Webcam stopped.'; const container = document.getElementById('webcam-container'); if (container.contains(webcam.canvas)) { container.replaceChild(webcamVideo, webcam.canvas); webcamVideo.style.display = 'none'; } }
 
-    async function loop() {
-      webcam.update(); // update the webcam frame
-      await predict(webcam.canvas);
-      rafId = requestAnimationFrame(loop);
-    }
+    async function loop(){ webcam.update(); await predict(webcam.canvas); rafId = requestAnimationFrame(loop); }
+    async function predict(imgOrCanvas){ if (!model) return; const prediction = await model.predict(imgOrCanvas); updatePredictions(prediction); }
 
-    async function predict(imgOrCanvas) {
-      if (!model) return;
-      const prediction = await model.predict(imgOrCanvas);
-      updatePredictions(prediction);
-    }
+    function updatePredictions(predictions){ const sorted = [...predictions].sort((a,b)=>b.probability-a.probability); predList.innerHTML = ''; const toShow = SHOW_TOP_ONLY ? [sorted[0]] : sorted; toShow.forEach(p=>{ const item = document.createElement('div'); item.className = 'result-item'; const left = document.createElement('div'); left.innerHTML = `<div class="result-name">${escapeHtml(p.className)}</div>`; const right = document.createElement('div'); right.style.display='flex'; right.style.alignItems='center'; right.style.gap='10px'; const progress = document.createElement('div'); progress.className='progress'; const bar = document.createElement('div'); bar.className='bar'; bar.style.width = Math.round(p.probability*100)+'%'; progress.appendChild(bar); const percent = document.createElement('div'); percent.textContent = Math.round(p.probability*100)+'%'; right.appendChild(progress); right.appendChild(percent); item.appendChild(left); item.appendChild(right); predList.appendChild(item); }); }
 
-    function updatePredictions(predictions) {
-      const sorted = [...predictions].sort((a,b) => b.probability - a.probability);
-      predList.innerHTML = '';
-      const toShow = SHOW_TOP_ONLY ? [sorted[0]] : sorted;
-      toShow.forEach(p => {
-        const item = document.createElement('div');
-        item.className = 'result-item';
-        const left = document.createElement('div');
-        left.innerHTML = `<div class=\"result-name\">${escapeHtml(p.className)}</div>`;
-        const right = document.createElement('div');
-        right.style.display = 'flex';
-        right.style.alignItems = 'center';
-        right.style.gap = '8px';
-        const progress = document.createElement('div');
-        progress.className = 'progress';
-        const bar = document.createElement('div');
-        bar.className = 'bar';
-        bar.style.width = Math.round(p.probability*100) + '%';
-        progress.appendChild(bar);
-        const percent = document.createElement('div');
-        percent.textContent = Math.round(p.probability*100) + '%';
-        right.appendChild(progress);
-        right.appendChild(percent);
-        item.appendChild(left);
-        item.appendChild(right);
-        predList.appendChild(item);
-      });
-    }
+    imageInput.addEventListener('change', async (ev)=>{ const file = ev.target.files && ev.target.files[0]; if (!file) return; stopWebcam(); const url = createObjectURL(file); uploadedImg.src = url; uploadedImg.onload = async ()=>{ uploadedImg.style.display='block'; try{ await predict(uploadedImg); statusEl.innerText = 'Classified uploaded image.'; }catch(err){ console.error(err); statusEl.innerText = 'Error classifying image.'; } try{ (window.URL || window.webkitURL).revokeObjectURL(url); }catch(e){} }; });
 
-    // Handle file uploads
-    imageInput.addEventListener('change', async (ev) => {
-      const file = ev.target.files && ev.target.files[0];
-      if (!file) return;
-      stopWebcam();
-      const url = createObjectURL(file);
-      uploadedImg.src = url;
-      uploadedImg.onload = async () => {
-        uploadedImg.style.display = 'block';
-        try {
-          await predict(uploadedImg);
-          statusEl.innerText = 'Classified uploaded image.';
-        } catch (err) {
-          console.error(err);
-          statusEl.innerText = 'Error classifying image.';
-        }
-        try { (window.URL || window.webkitURL).revokeObjectURL(url); } catch(e){}
-      };
-    });
+    snapBtn.addEventListener('click', async ()=>{ if (!isWebcamOn || !webcam) return; const canvas = webcam.canvas; const container = document.getElementById('webcam-container'); if (container.contains(webcam.canvas)) { webcam.canvas.style.display='block'; } try{ await predict(canvas); statusEl.innerText = 'Snapped frame classified.'; }catch(err){ console.error(err); statusEl.innerText = 'Error classifying snapped frame.'; } });
 
-    // Snap a still from webcam into canvas and classify that frame
-    snapBtn.addEventListener('click', async () => {
-      if (!isWebcamOn || !webcam) return;
-      const canvas = webcam.canvas;
-      // show canvas preview (optional)
-      const container = document.getElementById('webcam-container');
-      if (container.contains(webcam.canvas)) {
-        // ensure canvas is visible
-        webcam.canvas.style.display = 'block';
-      }
-      try {
-        await predict(canvas);
-        statusEl.innerText = 'Snapped frame classified.';
-      } catch (err) {
-        console.error(err);
-        statusEl.innerText = 'Error classifying snapped frame.';
-      }
-    });
+    webcamBtn.addEventListener('click', ()=>{ if (isWebcamOn) stopWebcam(); else startWebcam(); });
 
-    webcamBtn.addEventListener('click', () => {
-      if (isWebcamOn) stopWebcam(); else startWebcam();
-    });
+    const ACCENTS = ['#06b6d4','#8b5cf6','#f87171','#06b6d4','#f59e0b']; let accentIndex = 0; const themeBtn = document.getElementById('theme-btn'); themeBtn && themeBtn.addEventListener('click', ()=>{ accentIndex = (accentIndex+1)%ACCENTS.length; document.documentElement.style.setProperty('--accent', ACCENTS[accentIndex]); document.documentElement.style.setProperty('--accent-600', ACCENTS[accentIndex]); });
 
-    // simple accent color cycle for demo
-    const ACCENTS = ['#06b6d4','#8b5cf6','#f87171','#06b6d4','#f59e0b'];
-    let accentIndex = 0;
-    themeBtn.addEventListener('click', () => {
-      accentIndex = (accentIndex + 1) % ACCENTS.length;
-      document.documentElement.style.setProperty('--accent', ACCENTS[accentIndex]);
-      document.documentElement.style.setProperty('--accent-600', ACCENTS[accentIndex]);
-    });
+    function escapeHtml(text){ return String(text).replace(/[&<>\"']/g, (m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[m])); }
+    function createObjectURL(file){ return (window.URL || window.webkitURL).createObjectURL(file); }
 
-    // helpers
-    function escapeHtml(text) {
-      return String(text).replace(/[&<>\"']/g, (m) => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":"&#39;"}[m]));
-    }
-    function createObjectURL(file) {
-      return (window.URL || window.webkitURL).createObjectURL(file);
-    }
-
-    // Start
     window.addEventListener('load', init);
   </script>
 </body>
