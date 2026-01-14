@@ -3,65 +3,148 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Teachable Machine — Quick Embed</title>
+  <title>DermaScope AI</title>
+
+  <!--
+    Quick customizations:
+      - MODEL_URL (below script) — set your model
+      - CSS variables in :root — change colors/sizing
+      - CANVAS/WIDTH/HEIGHT constants in JS — camera/upload sizes
+      - AUTO_START_WEBCAM boolean — whether to auto-start webcam
+      - showTopOnly in updatePredictions() — show only top label
+  -->
+
   <style>
-    body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial; margin: 16px; }
-    .wrap { max-width: 840px; margin: 0 auto; }
-    header { display:flex; gap:12px; align-items:center; margin-bottom:12px; }
-    #webcam-container, #upload-container { display:flex; gap:12px; align-items:flex-start; flex-wrap:wrap; }
-    video, canvas, img { border:1px solid #ddd; border-radius:6px; max-width:100%; }
-    .controls { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+    :root{
+      --bg: #0b1220; /* dark background */
+      --card: #0f1724; /* card background */
+      --muted: #94a3b8;
+      --accent: #06b6d4; /* cyan */
+      --accent-600: #0891b2;
+      --accent-100: rgba(6,182,212,0.08);
+      --text: #e6eef6;
+      --radius: 10px;
+      --max-width: 920px;
+      --shadow: 0 8px 30px rgba(2,6,23,0.6);
+    }
+
+    html,body{height:100%}
+    body {
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+                   Roboto, "Helvetica Neue", Arial;
+      margin: 20px;
+      background: linear-gradient(180deg, #071021, #071422);
+      color: var(--text);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      line-height:1.45;
+    }
+
+    .wrap { max-width: var(--max-width); margin: 0 auto; padding: 18px; }
+    header { display:flex; flex-direction:column; gap:8px; margin-bottom:18px; }
+    h1 { margin:0; font-size:1.6rem; letter-spacing: -0.02em; }
+    .subheader { margin:0; color:var(--muted); font-weight:600; font-size:0.95rem; }
+    .top-row { display:flex; justify-content:space-between; gap:12px; align-items:center; }
+
+    .card {
+      background:var(--card);
+      border-radius:var(--radius);
+      padding:14px;
+      box-shadow: var(--shadow);
+      border:1px solid rgba(255,255,255,0.03);
+    }
+
+    .controls { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin:10px 0 14px 0; }
+    button {
+      padding:8px 12px; border-radius:8px; border:0; background:var(--accent);
+      color:#042027; cursor:pointer; font-weight:700;
+      box-shadow: 0 6px 14px rgba(6,182,212,0.08);
+    }
+    button.ghost { background: transparent; color: var(--accent-600); border: 1px solid rgba(6,182,212,0.12); box-shadow:none; }
+
+    .controls input[type=file] { padding:6px; background:transparent; color:var(--text); }
+
+    #webcam-container { display:flex; gap:14px; align-items:flex-start; flex-wrap:wrap; margin-top:6px; }
+    video, canvas, img { border-radius:8px; border:1px solid rgba(255,255,255,0.03); box-shadow: 0 6px 18px rgba(2,6,23,0.3); max-width:100%; background:#03060a; }
+    .preview { width:360px; max-width:100%; }
+
     .results { margin-top:12px; }
-    .result-item { display:flex; justify-content:space-between; gap:12px; padding:6px 8px; border-radius:6px; background:#fafafa; margin-bottom:6px; }
-    .progress { width:120px; height:10px; background:#eee; border-radius:6px; overflow:hidden; align-self:center; }
-    .bar { height:100%; background:#4caf50; }
-    #status { font-size:0.95rem; color:#444; }
-    small { color:#666; }
-    button { padding:8px 10px; border-radius:6px; border:1px solid #ccc; background:white; cursor:pointer; }
-    input[type=file] { padding:6px; }
+    .result-item { display:flex; justify-content:space-between; gap:12px; padding:8px 10px; border-radius:8px; background:var(--accent-100); margin-bottom:8px; align-items:center; }
+    .result-name { font-weight:700; color:var(--text); }
+    .progress { width:160px; height:10px; background:rgba(255,255,255,0.04); border-radius:8px; overflow:hidden; }
+    .bar { height:100%; background:linear-gradient(90deg,var(--accent) , var(--accent-600)); }
+
+    #status { font-size:0.95rem; color:var(--muted); }
+
+    footer { margin-top:18px; color:var(--muted); font-size:0.9rem; }
+
+    /* Responsive */
+    @media (max-width:720px){
+      .top-row{ flex-direction:column; align-items:flex-start; gap:6px;}
+      .preview { width:100%; }
+    }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <header>
-      <h1 style="margin:0;font-size:1.25rem">Teachable Machine — Quick Embed</h1>
-      <div id="status">Loading...</div>
+    <header class="card">
+      <div class="top-row">
+        <div>
+          <h1>DermaScope AI</h1>
+          <div class="subheader">Personal Project — MYP</div>
+        </div>
+        <div style="text-align:right">
+          <div id="status">Loading...</div>
+          <small style="color:var(--muted)">Model: q1DzKFBRt</small>
+        </div>
+      </div>
+
+      <p style="margin-top:12px;color:var(--muted)">
+        Quick embed for your Teachable Machine image classifier. Use the webcam for live predictions or upload an image.
+        Below are a few things you can quickly change in the file (see "Customizable" section).
+      </p>
     </header>
 
-    <p>
-      This page loads your Teachable Machine image model and supports webcam (live) classification or uploading an image.
-    </p>
+    <div class="card" style="margin-top:12px">
+      <div class="controls">
+        <button id="webcam-btn">Start Webcam</button>
+        <button id="snap-btn" class="ghost" title="Capture frame when webcam running">Snap</button>
+        <label style="display:flex;align-items:center;gap:8px;">
+          Upload an image:
+          <input id="image-input" type="file" accept="image/*">
+        </label>
+        <div style="flex:1"></div>
+        <button id="theme-btn" class="ghost" title="Cycle accent color">Change Accent</button>
+      </div>
 
-    <div class="controls" style="margin-bottom:8px">
-      <button id="webcam-btn">Start Webcam</button>
-      <label>
-        Upload an image:
-        <input id="image-input" type="file" accept="image/*">
-      </label>
-      <small>Tip: allow camera access for webcam mode.</small>
+      <div id="webcam-container">
+        <video id="webcam" autoplay playsinline class="preview" style="display:none;" width="360" height="270"></video>
+        <canvas id="webcam-canvas" width="360" height="270" class="preview" style="display:none;"></canvas>
+        <img id="uploaded-img" alt="" class="preview" style="display:none;">
+      </div>
+
+      <div class="results" id="results-area">
+        <h3 style="margin:12px 0 8px 0">Predictions</h3>
+        <div id="pred-list"></div>
+      </div>
     </div>
 
-    <div id="webcam-container">
-      <video id="webcam" autoplay playsinline width="320" height="240" style="display:none;"></video>
-      <canvas id="webcam-canvas" width="320" height="240" style="display:none;"></canvas>
-      <img id="uploaded-img" alt="" style="display:none; width:320px; height:auto;">
-    </div>
+    <section class="card" style="margin-top:12px">
+      <h4 style="margin-top:0">Customizable (what you can easily change)</h4>
+      <ul style="color:var(--muted)">
+        <li><strong>MODEL_URL</strong> – set the model base URL (currently points to your hosted model).</li>
+        <li><strong>Image size</strong> – change webcam width/height and canvas dimensions in the JS constants.</li>
+        <li><strong>Auto-start</strong> – toggle auto-start webcam (AUTO_START_WEBCAM in JS).</li>
+        <li><strong>Theme</strong> – edit CSS variables in <code>:root</code> (accent, background, radii).</li>
+        <li><strong>Display</strong> – show only the top prediction or show confidence bars (toggle in updatePredictions()).</li>
+        <li><strong>Layout</strong> – move index.html into <code>docs/</code> or use GH Pages root/gh-pages branch.</li>
+      </ul>
+      <p style="color:var(--muted); margin-bottom:0">Want any of these changed for you (auto-start webcam, different colors, or a compact display)? I can update and push the file.</p>
+    </section>
 
-    <div class="results">
-      <h3 style="margin:8px 0 6px 0">Predictions</h3>
-      <div id="pred-list"></div>
-    </div>
-
-    <hr>
-
-    <h4>Quick run instructions</h4>
-    <ol>
-      <li>Serve this file from a web server (browsers block some fetches from file://). Example:
-        <pre>python -m http.server 8000</pre>
-        then open <code>http://localhost:8000/index.html</code>
-      </li>
-      <li>Allow camera access for webcam mode and ensure your model is publicly hosted (Teachable Machine hosted models are fine).</li>
-    </ol>
+    <footer>
+      Tip: GitHub Pages provides HTTPS (required for camera). If model fails to load, export the model and host model files on this repo to avoid CORS issues.
+    </footer>
   </div>
 
   <!-- TensorFlow.js (must load first) -->
@@ -70,13 +153,25 @@
   <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script>
 
   <script>
-    // === YOUR MODEL URL (already set) ===
-    const MODEL_URL = "https://teachablemachine.withgoogle.com/models/q1DzKFBRt/"; // <-- your model
+    // =====================================================================
+    // CONFIG / QUICK EDITS
+    // =====================================================================
+    const MODEL_URL = "https://teachablemachine.withgoogle.com/models/q1DzKFBRt/"; // your model
+    const WEBCAM_WIDTH = 360;
+    const WEBCAM_HEIGHT = 270;
+    const AUTO_START_WEBCAM = false; // set true to auto-start camera on load
+    const SHOW_TOP_ONLY = false;     // set true to show only top prediction
 
+    // =====================================================================
+    // elements
+    // =====================================================================
     const statusEl = document.getElementById('status');
     const webcamBtn = document.getElementById('webcam-btn');
+    const snapBtn = document.getElementById('snap-btn');
+    const themeBtn = document.getElementById('theme-btn');
     const imageInput = document.getElementById('image-input');
     const webcamVideo = document.getElementById('webcam');
+    const webcamCanvas = document.getElementById('webcam-canvas');
     const uploadedImg = document.getElementById('uploaded-img');
     const predList = document.getElementById('pred-list');
 
@@ -98,6 +193,8 @@
         model = await tmImage.load(modelJSON, metadataJSON);
         maxPredictions = model.getTotalClasses();
         statusEl.innerText = "Model loaded.";
+        // optionally auto-start
+        if (AUTO_START_WEBCAM) startWebcam();
       } catch (err) {
         console.error(err);
         statusEl.innerText = "Failed to load model. Check the URL and CORS. See console for details.";
@@ -109,14 +206,14 @@
       if (isWebcamOn) return stopWebcam();
 
       try {
-        const flip = true; // mirror for user-facing camera
-        webcam = new tmImage.Webcam(320, 240, flip);
+        const flip = true; // mirror user-facing camera
+        webcam = new tmImage.Webcam(WEBCAM_WIDTH, WEBCAM_HEIGHT, flip);
         await webcam.setup(); // request permission
         await webcam.play();
         webcamVideo.style.display = 'block';
+        webcamCanvas.style.display = 'none';
         uploadedImg.style.display = 'none';
         const container = document.getElementById('webcam-container');
-        // replace the placeholder video element with the webcam.canvas
         if (container.contains(webcamVideo)) container.replaceChild(webcam.canvas, webcamVideo);
         isWebcamOn = true;
         webcamBtn.innerText = 'Stop Webcam';
@@ -136,7 +233,6 @@
       webcamBtn.innerText = 'Start Webcam';
       statusEl.innerText = 'Webcam stopped.';
       const container = document.getElementById('webcam-container');
-      // restore the original video element
       if (container.contains(webcam.canvas)) {
         container.replaceChild(webcamVideo, webcam.canvas);
         webcamVideo.style.display = 'none';
@@ -158,11 +254,12 @@
     function updatePredictions(predictions) {
       const sorted = [...predictions].sort((a,b) => b.probability - a.probability);
       predList.innerHTML = '';
-      sorted.forEach(p => {
+      const toShow = SHOW_TOP_ONLY ? [sorted[0]] : sorted;
+      toShow.forEach(p => {
         const item = document.createElement('div');
         item.className = 'result-item';
         const left = document.createElement('div');
-        left.innerHTML = `<strong>${escapeHtml(p.className)}</strong>`;
+        left.innerHTML = `<div class=\"result-name\">${escapeHtml(p.className)}</div>`;
         const right = document.createElement('div');
         right.style.display = 'flex';
         right.style.alignItems = 'center';
@@ -199,24 +296,51 @@
           console.error(err);
           statusEl.innerText = 'Error classifying image.';
         }
-        // revoke via window.URL to avoid collision with MODEL_URL name
         try { (window.URL || window.webkitURL).revokeObjectURL(url); } catch(e){}
       };
+    });
+
+    // Snap a still from webcam into canvas and classify that frame
+    snapBtn.addEventListener('click', async () => {
+      if (!isWebcamOn || !webcam) return;
+      const canvas = webcam.canvas;
+      // show canvas preview (optional)
+      const container = document.getElementById('webcam-container');
+      if (container.contains(webcam.canvas)) {
+        // ensure canvas is visible
+        webcam.canvas.style.display = 'block';
+      }
+      try {
+        await predict(canvas);
+        statusEl.innerText = 'Snapped frame classified.';
+      } catch (err) {
+        console.error(err);
+        statusEl.innerText = 'Error classifying snapped frame.';
+      }
     });
 
     webcamBtn.addEventListener('click', () => {
       if (isWebcamOn) stopWebcam(); else startWebcam();
     });
 
-    // small helpers
+    // simple accent color cycle for demo
+    const ACCENTS = ['#06b6d4','#8b5cf6','#f87171','#06b6d4','#f59e0b'];
+    let accentIndex = 0;
+    themeBtn.addEventListener('click', () => {
+      accentIndex = (accentIndex + 1) % ACCENTS.length;
+      document.documentElement.style.setProperty('--accent', ACCENTS[accentIndex]);
+      document.documentElement.style.setProperty('--accent-600', ACCENTS[accentIndex]);
+    });
+
+    // helpers
     function escapeHtml(text) {
-      return String(text).replace(/[&<>\"']/g, (m) => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":"&#39;"}[m]));
+      return String(text).replace(/[&<>\"']/g, (m) => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;','\'":"&#39;"}[m]));
     }
     function createObjectURL(file) {
       return (window.URL || window.webkitURL).createObjectURL(file);
     }
 
-    // Start: load model on page load
+    // Start
     window.addEventListener('load', init);
   </script>
 </body>
