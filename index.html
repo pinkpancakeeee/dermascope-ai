@@ -5,15 +5,6 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>DermaScope AI</title>
 
-  <!--
-    Quick customizations:
-      - MODEL_URL (below script) — set your model
-      - CSS variables in :root — change colors/sizing
-      - CANVAS/WIDTH/HEIGHT constants in JS — camera/upload sizes
-      - AUTO_START_WEBCAM boolean — whether to auto-start webcam
-      - showTopOnly in updatePredictions() — show only top label
-  -->
-
   <style>
     :root{
       --bg: #0b1220; /* dark background */
@@ -94,14 +85,14 @@
           <div class="subheader">Personal Project — MYP</div>
         </div>
         <div style="text-align:right">
+          <div style="font-weight:600;color:var(--text);">By: Devyani Shekhawat</div>
           <div id="status">Loading...</div>
           <small style="color:var(--muted)">Model: q1DzKFBRt</small>
         </div>
       </div>
 
       <p style="margin-top:12px;color:var(--muted)">
-        Quick embed for your Teachable Machine image classifier. Use the webcam for live predictions or upload an image.
-        Below are a few things you can quickly change in the file (see "Customizable" section).
+        I’m Devyani, a high school student passionate about AI and healthcare. I built DermaScope AI to explore how machine learning can help identify common dermatological conditions like acne, eczema, and benign moles. This project was created as part of my MYP personal project — it’s a learning experiment, not a medical diagnostic tool. If you try it, please don’t use the results as medical advice. If you have questions or feedback, I’d love to hear from you!
       </p>
     </header>
 
@@ -129,19 +120,6 @@
       </div>
     </div>
 
-    <section class="card" style="margin-top:12px">
-      <h4 style="margin-top:0">Customizable (what you can easily change)</h4>
-      <ul style="color:var(--muted)">
-        <li><strong>MODEL_URL</strong> – set the model base URL (currently points to your hosted model).</li>
-        <li><strong>Image size</strong> – change webcam width/height and canvas dimensions in the JS constants.</li>
-        <li><strong>Auto-start</strong> – toggle auto-start webcam (AUTO_START_WEBCAM in JS).</li>
-        <li><strong>Theme</strong> – edit CSS variables in <code>:root</code> (accent, background, radii).</li>
-        <li><strong>Display</strong> – show only the top prediction or show confidence bars (toggle in updatePredictions()).</li>
-        <li><strong>Layout</strong> – move index.html into <code>docs/</code> or use GH Pages root/gh-pages branch.</li>
-      </ul>
-      <p style="color:var(--muted); margin-bottom:0">Want any of these changed for you (auto-start webcam, different colors, or a compact display)? I can update and push the file.</p>
-    </section>
-
     <footer>
       Tip: GitHub Pages provides HTTPS (required for camera). If model fails to load, export the model and host model files on this repo to avoid CORS issues.
     </footer>
@@ -153,18 +131,14 @@
   <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script>
 
   <script>
-    // =====================================================================
     // CONFIG / QUICK EDITS
-    // =====================================================================
     const MODEL_URL = "https://teachablemachine.withgoogle.com/models/q1DzKFBRt/"; // your model
     const WEBCAM_WIDTH = 360;
     const WEBCAM_HEIGHT = 270;
     const AUTO_START_WEBCAM = false; // set true to auto-start camera on load
     const SHOW_TOP_ONLY = false;     // set true to show only top prediction
 
-    // =====================================================================
     // elements
-    // =====================================================================
     const statusEl = document.getElementById('status');
     const webcamBtn = document.getElementById('webcam-btn');
     const snapBtn = document.getElementById('snap-btn');
@@ -193,7 +167,6 @@
         model = await tmImage.load(modelJSON, metadataJSON);
         maxPredictions = model.getTotalClasses();
         statusEl.innerText = "Model loaded.";
-        // optionally auto-start
         if (AUTO_START_WEBCAM) startWebcam();
       } catch (err) {
         console.error(err);
@@ -334,7 +307,7 @@
 
     // helpers
     function escapeHtml(text) {
-      return String(text).replace(/[&<>\"']/g, (m) => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;','\'":"&#39;"}[m]));
+      return String(text).replace(/[&<>\"']/g, (m) => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":"&#39;"}[m]));
     }
     function createObjectURL(file) {
       return (window.URL || window.webkitURL).createObjectURL(file);
