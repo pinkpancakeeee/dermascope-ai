@@ -64,7 +64,9 @@
     </ol>
   </div>
 
-  <!-- Teachable Machine image library -->
+  <!-- TensorFlow.js (must load first) -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.21.0/dist/tf.min.js"></script>
+  <!-- Teachable Machine image library (depends on tf) -->
   <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script>
 
   <script>
@@ -208,7 +210,7 @@
 
     // small helpers
     function escapeHtml(text) {
-      return String(text).replace(/[&<>"']/g, (m) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[m]));
+      return String(text).replace(/[&<>\"']/g, (m) => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":"&#39;"}[m]));
     }
     function createObjectURL(file) {
       return (window.URL || window.webkitURL).createObjectURL(file);
